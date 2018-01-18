@@ -1,0 +1,435 @@
+# always call this first
+visit boot_up
+
+
+chapter main
+prompt Enter+Number+1+in+Binary
+
+visit clear_cx
+set cx-000 set cx-001 set cx-010
+visit clear_ax
+
+chapter load_ax
+
+clear jmp_mf
+match 1 set jmp_mf visit set_ax@cx
+if jmp_mf goto match_fin_a
+match 0 visit clear_ax@cx
+
+chapter match_fin_a
+
+visit dec_cx
+
+unless cx-111 visit load_ax
+return load-ax
+
+visit clear_cx
+set cx-000 set cx-001 set cx-010
+visit clear_bx
+
+prompt Enter+Number+2+in+Binary
+
+chapter load_bx
+
+clear jmp_mf
+match 1 set jmp_mf visit set_bx@cx
+if jmp_mf goto match_fin_b
+match 0 visit clear_bx@cx
+
+chapter match_fin_b
+
+visit dec_cx
+
+unless cx-111 visit load_bx
+return load_bx
+
+visit ax_sub_bx
+
+>The difference is:
+
+visit print_ax
+
+end program
+
+
+
+########################
+#	The Stack		   #
+########################
+
+# Basically, we need a lot of space reserved, and we need to be able to move around in it.
+# We can hopefully achieve this in a nice way using the $ function.
+# However, we need to implement push and pop nicely.
+# So we will have a 'bp' and 'sp' registers. 
+# 
+
+
+#########################
+#	Core Functions		#
+#########################
+
+
+chapter boot_up
+visit clear_ax
+visit clear_bx
+visit clear_cx
+visit clear_bp
+visit clear_sp
+return home
+
+
+chapter print_ax
+
+if ax-111 print 1
+unless ax-111 print 0
+if ax-110 print 1
+unless ax-110 print 0
+if ax-101 print 1
+unless ax-101 print 0
+if ax-100 print 1
+unless ax-100 print 0
+if ax-011 print 1
+unless ax-011 print 0
+if ax-010 print 1
+unless ax-010 print 0
+if ax-001 print 1
+unless ax-001 print 0
+if ax-000 print 1
+unless ax-000 print 0
+
+println +
+
+return home
+
+chapter print_bx
+
+if bx-111 print 1
+unless bx-111 print 0
+if bx-110 print 1
+unless bx-110 print 0
+if bx-101 print 1
+unless bx-101 print 0
+if bx-100 print 1
+unless bx-100 print 0
+if bx-011 print 1
+unless bx-011 print 0
+if bx-010 print 1
+unless bx-010 print 0
+if bx-001 print 1
+unless bx-001 print 0
+if bx-000 print 1
+unless bx-000 print 0
+
+println +
+
+return home
+
+chapter ax_add_bx 
+
+visit clear_cx
+
+clear carry_bit
+
+chapter ax_add_bx_loop
+
+visit load_ax@cx
+visit load_bx@cx
+
+if carry_bit if ax_bit if bx_bit set carry_bit goto goto_set 
+if carry_bit if ax_bit unless bx_bit set carry_bit goto goto_clear 
+if carry_bit unless ax_bit if bx_bit set carry_bit goto goto_clear
+if carry_bit unless ax_bit unless bx_bit clear carry_bit goto goto_set
+unless carry_bit if ax_bit if bx_bit set carry_bit goto goto_clear
+unless carry_bit unless ax_bit if bx_bit clear carry_bit goto goto_set
+unless carry_bit if ax_bit unless bx_bit clear carry_bit goto goto_set
+unless carry_bit unless ax_bit unless bx_bit clear carry_bit goto goto_clear
+
+chapter goto_set
+
+visit set_ax@cx
+
+goto add_done
+
+chapter goto_clear
+
+visit clear_ax@cx
+
+goto add_done
+
+chapter add_done
+
+visit inc_cx
+
+unless cx-011 visit ax_add_bx_loop
+return home
+
+chapter ax_sub_bx 
+
+
+# we must negate bx by inverting the digits and then adding one.
+
+visit invert_bx
+
+visit inc_bx
+
+visit ax_add_bx
+
+return end_ax_sub_bx
+
+
+
+chapter invert_bx
+
+visit clear_cx
+chapter invert_bx_loop
+
+visit load_bx@cx
+if bx_bit visit clear_bx@cx
+unless bx_bit visit set_bx@cx
+
+visit inc_cx
+
+unless cx-011 visit invert_bx_loop
+return invert_bx
+
+
+chapter load_ax@cx
+
+clear ax_bit
+
+unless cx-000 unless cx-001 unless cx-010 if ax-000 set ax_bit return home
+if cx-000 unless cx-001 unless cx-010 if ax-001 set ax_bit return home
+unless cx-000 if cx-001 unless cx-010 if ax-010 set ax_bit return home
+if cx-000 if cx-001 unless cx-010 if ax-011 set ax_bit return home
+unless cx-000 unless cx-001 if cx-010 if ax-100 set ax_bit return home
+if cx-000 unless cx-001 if cx-010 if ax-101 set ax_bit return home
+unless cx-000 if cx-001 if cx-010 if ax-110 set ax_bit return home
+if cx-000 if cx-001 if cx-010 if ax-111 set ax_bit return home
+
+return home
+
+chapter load_bx@cx
+
+clear bx_bit
+
+unless cx-000 unless cx-001 unless cx-010 if bx-000 set bx_bit return home
+if cx-000 unless cx-001 unless cx-010 if bx-001 set bx_bit return home
+unless cx-000 if cx-001 unless cx-010 if bx-010 set bx_bit return home
+if cx-000 if cx-001 unless cx-010 if bx-011 set bx_bit return home
+unless cx-000 unless cx-001 if cx-010 if bx-100 set bx_bit return home
+if cx-000 unless cx-001 if cx-010 if bx-101 set bx_bit return home
+unless cx-000 if cx-001 if cx-010 if bx-110 set bx_bit return home
+if cx-000 if cx-001 if cx-010 if bx-111 set bx_bit return home
+
+return home
+
+
+chapter set_ax@cx
+
+#only last 3 digits of cx considered.
+
+unless cx-000 unless cx-001 unless cx-010 set ax-000 return home
+if cx-000 unless cx-001 unless cx-010 set ax-001 return home
+unless cx-000 if cx-001 unless cx-010 set ax-010 return home
+if cx-000 if cx-001 unless cx-010 set ax-011 return home
+unless cx-000 unless cx-001 if cx-010 set ax-100 return home
+if cx-000 unless cx-001 if cx-010 set ax-101 return home
+unless cx-000 if cx-001 if cx-010 set ax-110 return home
+if cx-000 if cx-001 if cx-010 set ax-111 return home
+
+return home
+
+chapter clear_ax@cx
+
+#only last 3 digits of cx considered.
+
+unless cx-000 unless cx-001 unless cx-010 clear ax-000 return home
+if cx-000 unless cx-001 unless cx-010 clear ax-001 return home
+unless cx-000 if cx-001 unless cx-010 clear ax-010 return home
+if cx-000 if cx-001 unless cx-010 clear ax-011 return home
+unless cx-000 unless cx-001 if cx-010 clear ax-100 return home
+if cx-000 unless cx-001 if cx-010 clear ax-101 return home
+unless cx-000 if cx-001 if cx-010 clear ax-110 return home
+if cx-000 if cx-001 if cx-010 clear ax-111 return home
+
+return home
+
+
+chapter set_bx@cx
+
+#only last 3 digits of cx considered.
+
+unless cx-000 unless cx-001 unless cx-010 set bx-000 return home
+if cx-000 unless cx-001 unless cx-010 set bx-001 return home
+unless cx-000 if cx-001 unless cx-010 set bx-010 return home
+if cx-000 if cx-001 unless cx-010 set bx-011 return home
+unless cx-000 unless cx-001 if cx-010 set bx-100 return home
+if cx-000 unless cx-001 if cx-010 set bx-101 return home
+unless cx-000 if cx-001 if cx-010 set bx-110 return home
+if cx-000 if cx-001 if cx-010 set bx-111 return home
+
+return home
+
+chapter clear_bx@cx
+
+#only last 3 digits of cx considered.
+
+unless cx-000 unless cx-001 unless cx-010 clear bx-000 return home
+if cx-000 unless cx-001 unless cx-010 clear bx-001 return home
+unless cx-000 if cx-001 unless cx-010 clear bx-010 return home
+if cx-000 if cx-001 unless cx-010 clear bx-011 return home
+unless cx-000 unless cx-001 if cx-010 clear bx-100 return home
+if cx-000 unless cx-001 if cx-010 clear bx-101 return home
+unless cx-000 if cx-001 if cx-010 clear bx-110 return home
+if cx-000 if cx-001 if cx-010 clear bx-111 return home
+
+return home
+
+
+
+
+chapter clear_ax
+clear ax-000 clear ax-001 clear ax-010 clear ax-011 clear ax-100 clear ax-101 clear ax-110 clear ax-111
+return home
+
+chapter set_ax
+set ax-000 set ax-001 set ax-010 set ax-011 set ax-100 set ax-101 set ax-110 set ax-111
+return home
+
+chapter clear_bx
+clear bx-000 clear bx-001 clear bx-010 clear bx-011 clear bx-100 clear bx-101 clear bx-110 clear bx-111
+return home
+
+chapter set_bx
+set bx-000 set bx-001 set bx-010 set bx-011 set bx-100 set bx-101 set bx-110 set bx-111
+return home
+
+chapter clear_cx
+clear cx-000 clear cx-001 clear cx-010 clear cx-011 clear cx-100 clear cx-101 clear cx-110 clear cx-111
+return home
+
+chapter set_cx
+set cx-000 set cx-001 set cx-010 set cx-011 set cx-100 set cx-101 set cx-110 set cx-111
+return home
+
+
+chapter clear_sp
+clear sp-000 clear sp-001 clear sp-010 clear sp-011 clear sp-100 clear sp-101 clear sp-110 clear sp-111
+return home
+
+chapter set_sp
+set sp-000 set sp-001 set sp-010 set sp-011 set sp-100 set sp-101 set sp-110 set sp-111
+return home
+
+chapter clear_bp
+clear bp-000 clear bp-001 clear bp-010 clear bp-011 clear bp-100 clear bp-101 clear bp-110 clear bp-111
+return home
+
+chapter set_bp
+set bp-000 set bp-001 set bp-010 set bp-011 set bp-100 set bp-101 set bp-110 set bp-111
+return home
+
+
+
+
+chapter inc_ax
+
+clear overflow_flag
+
+unless ax-000 set ax-000 return home
+unless ax-001 set ax-001 clear ax-000 return home
+unless ax-010 set ax-010 clear ax-001 clear ax-000 return home
+unless ax-011 set ax-011 clear ax-010 clear ax-001 clear ax-000 return home
+unless ax-100 set ax-100 clear ax-011 clear ax-010 clear ax-001 clear ax-000 return home
+unless ax-101 set ax-101 clear ax-100 clear ax-011 clear ax-010 clear ax-001 clear ax-000 return home
+unless ax-110 set ax-110 clear ax-101 clear ax-100 clear ax-011 clear ax-010 clear ax-001 clear ax-000 return home
+unless ax-111 set ax-111 clear ax-110 clear ax-101 clear ax-100 clear ax-011 clear ax-010 clear ax-001 clear ax-000 return home
+
+set overflow_flag
+visit clear_ax
+return home
+
+chapter dec_ax
+
+clear overflow_flag
+
+if ax-000 clear ax-000 return home
+if ax-001 clear ax-001 set ax-000 return home
+if ax-010 clear ax-010 set ax-001 set ax-000 return home
+if ax-011 clear ax-011 set ax-010 set ax-001 set ax-000 return home
+if ax-100 clear ax-100 set ax-011 set ax-010 set ax-001 set ax-000 return home
+if ax-101 clear ax-101 set ax-100 set ax-011 set ax-010 set ax-001 set ax-000 return home
+if ax-110 clear ax-110 set ax-101 set ax-100 set ax-011 set ax-010 set ax-001 set ax-000 return home
+if ax-111 clear ax-111 set ax-110 set ax-101 set ax-100 set ax-011 set ax-010 set ax-001 set ax-000 return home
+
+set overflow_flag
+visit set_ax
+return home
+
+chapter inc_bx
+
+clear overflow_flag
+
+unless bx-000 set bx-000 return home
+unless bx-001 set bx-001 clear bx-000 return home
+unless bx-010 set bx-010 clear bx-001 clear bx-000 return home
+unless bx-011 set bx-011 clear bx-010 clear bx-001 clear bx-000 return home
+unless bx-100 set bx-100 clear bx-011 clear bx-010 clear bx-001 clear bx-000 return home
+unless bx-101 set bx-101 clear bx-100 clear bx-011 clear bx-010 clear bx-001 clear bx-000 return home
+unless bx-110 set bx-110 clear bx-101 clear bx-100 clear bx-011 clear bx-010 clear bx-001 clear bx-000 return home
+unless bx-111 set bx-111 clear bx-110 clear bx-101 clear bx-100 clear bx-011 clear bx-010 clear bx-001 clear bx-000 return home
+
+set overflow_flag
+visit clear_bx
+return home
+
+chapter dec_bx
+
+clear overflow_flag
+
+if bx-000 clear bx-000 return home
+if bx-001 clear bx-001 set bx-000 return home
+if bx-010 clear bx-010 set bx-001 set bx-000 return home
+if bx-011 clear bx-011 set bx-010 set bx-001 set bx-000 return home
+if bx-100 clear bx-100 set bx-011 set bx-010 set bx-001 set bx-000 return home
+if bx-101 clear bx-101 set bx-100 set bx-011 set bx-010 set bx-001 set bx-000 return home
+if bx-110 clear bx-110 set bx-101 set bx-100 set bx-011 set bx-010 set bx-001 set bx-000 return home
+if bx-111 clear bx-111 set bx-110 set bx-101 set bx-100 set bx-011 set bx-010 set bx-001 set bx-000 return home
+
+set overflow_flag
+visit set_bx
+return home
+
+chapter inc_cx
+
+clear overflow_flag
+
+unless cx-000 set cx-000 return home
+unless cx-001 set cx-001 clear cx-000 return home
+unless cx-010 set cx-010 clear cx-001 clear cx-000 return home
+unless cx-011 set cx-011 clear cx-010 clear cx-001 clear cx-000 return home
+unless cx-100 set cx-100 clear cx-011 clear cx-010 clear cx-001 clear cx-000 return home
+unless cx-101 set cx-101 clear cx-100 clear cx-011 clear cx-010 clear cx-001 clear cx-000 return home
+unless cx-110 set cx-110 clear cx-101 clear cx-100 clear cx-011 clear cx-010 clear cx-001 clear cx-000 return home
+unless cx-111 set cx-111 clear cx-110 clear cx-101 clear cx-100 clear cx-011 clear cx-010 clear cx-001 clear cx-000 return home
+
+set overflow_flag
+visit clear_cx
+return home
+
+chapter dec_cx
+
+clear overflow_flag
+
+if cx-000 clear cx-000 return home
+if cx-001 clear cx-001 set cx-000 return home
+if cx-010 clear cx-010 set cx-001 set cx-000 return home
+if cx-011 clear cx-011 set cx-010 set cx-001 set cx-000 return home
+if cx-100 clear cx-100 set cx-011 set cx-010 set cx-001 set cx-000 return home
+if cx-101 clear cx-101 set cx-100 set cx-011 set cx-010 set cx-001 set cx-000 return home
+if cx-110 clear cx-110 set cx-101 set cx-100 set cx-011 set cx-010 set cx-001 set cx-000 return home
+if cx-111 clear cx-111 set cx-110 set cx-101 set cx-100 set cx-011 set cx-010 set cx-001 set cx-000 return home
+
+set overflow_flag
+visit set_cx
+return home

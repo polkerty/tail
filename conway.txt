@@ -1,0 +1,665 @@
+
+room clearWedges
+
+clear 0000,0000 clear 0000,0001 clear 0000,0010 clear 0000,0011 clear 0000,0100 clear 0000,0101 clear 0000,0110 clear 0000,0111 clear 0000,1000 clear 0000,1001
+clear 0001,0000 clear 0001,0001 clear 0001,0010 clear 0001,0011 clear 0001,0100 clear 0001,0101 clear 0001,0110 set 0001,0111 set 0001,1000 clear 0001,1001
+clear 0010,0000 clear 0010,0001 clear 0010,0010 clear 0010,0011 clear 0010,0100 clear 0010,0101 clear 0010,0110 clear 0010,0111 set 0010,1000 clear 0010,1001
+clear 0011,0000 clear 0011,0001 clear 0011,0010 clear 0011,0011 clear 0011,0100 set 0011,0101 clear 0011,0110 clear 0011,0111 set 0011,1000 clear 0011,1001
+clear 0100,0000 clear 0100,0001 clear 0100,0010 clear 0100,0011 clear 0100,0100 set 0100,0101 clear 0100,0110 clear 0100,0111 clear 0100,1000 clear 0100,1001
+clear 0101,0000 clear 0101,0001 clear 0101,0010 clear 0101,0011 clear 0101,0100 set 0101,0101 clear 0101,0110 clear 0101,0111 clear 0101,1000 clear 0101,1001
+clear 0110,0000 clear 0110,0001 clear 0110,0010 clear 0110,0011 clear 0110,0100 clear 0110,0101 clear 0110,0110 clear 0110,0111 clear 0110,1000 clear 0110,1001
+clear 0111,0000 clear 0111,0001 clear 0111,0010 clear 0111,0011 clear 0111,0100 clear 0111,0101 clear 0111,0110 clear 0111,0111 clear 0111,1000 clear 0111,1001
+clear 1000,0000 clear 1000,0001 clear 1000,0010 clear 1000,0011 clear 1000,0100 clear 1000,0101 clear 1000,0110 clear 1000,0111 clear 1000,1000 clear 1000,1001
+clear 1001,0000 clear 1001,0001 clear 1001,0010 clear 1001,0011 clear 1001,0100 clear 1001,0101 clear 1001,0110 clear 1001,0111 clear 1001,1000 clear 1001,1001
+
+clear N0000,0000 clear N0000,0001 clear N0000,0010 clear N0000,0011 clear N0000,0100 clear N0000,0101 clear N0000,0110 clear N0000,0111 clear N0000,1000 clear N0000,1001
+clear N0001,0000 clear N0001,0001 clear N0001,0010 clear N0001,0011 clear N0001,0100 clear N0001,0101 clear N0001,0110 clear N0001,0111 clear N0001,1000 clear N0001,1001
+clear N0010,0000 clear N0010,0001 clear N0010,0010 clear N0010,0011 clear N0010,0100 clear N0010,0101 clear N0010,0110 clear N0010,0111 clear N0010,1000 clear N0010,1001
+clear N0011,0000 clear N0011,0001 clear N0011,0010 clear N0011,0011 clear N0011,0100 clear N0011,0101 clear N0011,0110 clear N0011,0111 clear N0011,1000 clear N0011,1001
+clear N0100,0000 clear N0100,0001 clear N0100,0010 clear N0100,0011 clear N0100,0100 clear N0100,0101 clear N0100,0110 clear N0100,0111 clear N0100,1000 clear N0100,1001
+clear N0101,0000 clear N0101,0001 clear N0101,0010 clear N0101,0011 clear N0101,0100 clear N0101,0101 clear N0101,0110 clear N0101,0111 clear N0101,1000 clear N0101,1001
+clear N0110,0000 clear N0110,0001 clear N0110,0010 clear N0110,0011 clear N0110,0100 clear N0110,0101 clear N0110,0110 clear N0110,0111 clear N0110,1000 clear N0110,1001
+clear N0111,0000 clear N0111,0001 clear N0111,0010 clear N0111,0011 clear N0111,0100 clear N0111,0101 clear N0111,0110 clear N0111,0111 clear N0111,1000 clear N0111,1001
+clear N1000,0000 clear N1000,0001 clear N1000,0010 clear N1000,0011 clear N1000,0100 clear N1000,0101 clear N1000,0110 clear N1000,0111 clear N1000,1000 clear N1000,1001
+clear N1001,0000 clear N1001,0001 clear N1001,0010 clear N1001,0011 clear N1001,0100 clear N1001,0101 clear N1001,0110 clear N1001,0111 clear N1001,1000 clear N1001,1001
+
+
+clear X0, clear X1, clear X2, set X3
+clear Y0, clear Y1, clear Y2, set Y3
+
+clear x0 clear x1 clear x2 clear x3
+clear y0 clear y1 clear y2 clear y3
+
+clear c0 clear c1 clear c2 clear c3
+
+clear xy
+clear XY
+
+goto start
+
+
+
+room start
+>Conway's Game of Life
+>Initial configuration is set 
+>
+>
+room master
+visit print
+visit loadFromN
+>
+>
+prompt Press+enter+for+next+iteration+or+type+x+to+exit
+>
+>
+on x end Conway
+goto master
+
+room scorexy
+
+visit cnt0
+visit xXyY
+clear XY
+if xy set XY
+
+visit right
+visit loadxy
+if xy visit cnt
+
+visit up
+visit loadxy
+if xy visit cnt
+
+visit left
+visit loadxy
+if xy visit cnt
+
+visit left
+visit loadxy
+if xy visit cnt
+
+visit down
+visit loadxy
+if xy visit cnt
+
+visit down
+visit loadxy
+if xy visit cnt
+
+visit right
+visit loadxy
+if xy visit cnt
+
+visit right
+visit loadxy
+if xy visit cnt
+
+
+visit XxYy
+visit liveOrDead
+
+if live visit setNxy
+
+return home
+
+room printc
+if c0 print 1
+unless c0 print 0
+if c1 print 1
+unless c1 print 0
+if c2 print 1
+unless c2 print 0
+if c3 print 1
+unless c3 print 0
+return home
+
+>// XY is current state of cell
+>// <c0,c1,c2,c3> is num of neighbors
+room liveOrDead
+
+clear live
+unless XY unless c0 unless c1 if c2 if c3 set live return home
+if XY unless c0 unless c1 if c2 set live return home
+
+return home
+
+
+>// starts at 0001,1000...1000,1000
+>// prints through 0001,0001...1000,0001
+>// We deliberately leave an invisible buffer square. 
+>// This allows better rendering and simplifies the Life algorithm.
+>// We compute the next level while we print!
+room print
+
+visit clearN
+
+visit clearx
+set x3
+visit cleary
+set y0
+
+
+room print*
+
+visit loadxy
+
+visit printxy
+visit scorexy
+
+clear is-y visit is(y-1)in
+if good set is-y
+
+visit is(xp2)in
+unless good visit down
+unless good unless is-y println + return home
+unless good visit clearx
+
+visit right
+
+unless good println +
+visit isyin
+if good visit print* 
+return home
+
+room printxy
+
+unless xy print +`+
+if xy print +O+
+
+return home
+
+room isxin
+
+clear good
+unless x0 set good
+if x0 unless x1 unless x2 set good
+return home
+
+room is(xp1)in
+
+clear good
+unless x0 set good
+if x0 unless x1 unless x2 unless x3 set good
+return home
+
+room is(xp2)in
+
+clear good
+unless x0 set good
+return home
+
+room isyin
+
+clear good
+unless y0 set good
+if y0 unless y1 unless y2 set good
+return home
+
+room is(y-1)in
+
+set good
+unless y0 unless y1 unless y2 clear good
+return home
+
+room xXyY
+
+clear X0 clear X1 clear X2 clear X3
+clear Y0 clear Y1 clear Y2 clear Y3
+
+if x0 set X0
+if x1 set X1
+if x2 set X2
+if x3 set X3
+
+if y0 set Y0
+if y1 set Y1
+if y2 set Y2
+if y3 set Y3
+
+return home
+
+room XxYy
+
+clear x0 clear x1 clear x2 clear x3
+clear y0 clear y1 clear y2 clear y3
+
+if X0 set x0
+if X1 set x1
+if X2 set x2
+if X3 set x3
+
+if Y0 set y0
+if Y1 set y1
+if Y2 set y2
+if Y3 set y3
+
+return home
+
+room clearx
+
+clear x0 clear x1 clear x2 clear x3
+return home
+
+room cleary
+clear y0 clear y1 clear y2 clear y3
+return home
+
+room clearxy
+
+clear xy
+set modify-bool
+
+visit loadx
+
+return home
+
+room setxy
+
+set xy
+set modify-bool
+
+visit loadx
+
+return home
+
+room setNxy
+
+set Nxy
+set modify-bool-N
+clear modify-bool
+
+visit loadx
+return home
+
+room loadxy
+
+clear xy
+
+visit loadx
+visit $
+visit loady
+
+if $ set xy
+return home
+
+
+return home
+
+room loadx
+unless modify-bool unless modify-bool-N set set-mode
+unless x0 unless x1 unless x2 unless x3 goto 0000
+unless x0 unless x1 unless x2 if x3 goto 0001
+unless x0 unless x1 if x2 unless x3 goto 0010
+unless x0 unless x1 if x2 if x3 goto 0011
+unless x0 if x1 unless x2 unless x3 goto 0100
+unless x0 if x1 unless x2 if x3 goto 0101
+unless x0 if x1 if x2 unless x3 goto 0110
+unless x0 if x1 if x2 if x3 goto 0111
+if x0 unless x1 unless x2 unless x3 goto 1000
+if x0 unless x1 unless x2 if x3 goto 1001
+>Error: x exceeded 1001
+return home
+
+room loady
+set set-mode
+unless y0 unless y1 unless y2 unless y3 goto 0000
+unless y0 unless y1 unless y2 if y3 goto 0001
+unless y0 unless y1 if y2 unless y3 goto 0010
+unless y0 unless y1 if y2 if y3 goto 0011
+unless y0 if y1 unless y2 unless y3 goto 0100
+unless y0 if y1 unless y2 if y3 goto 0101
+unless y0 if y1 if y2 unless y3 goto 0110
+unless y0 if y1 if y2 if y3 goto 0111
+if y0 unless y1 unless y2 unless y3 goto 1000
+if y0 unless y1 unless y2 if y3 goto 1001
+>Error: y exceeded 1001
+return home
+
+
+room cnt0
+
+clear c0 clear c1 clear c2 clear c3
+return home
+
+room cnt
+
+unless c3 set c3 return home
+unless c2 set c2 clear c3 return home
+unless c1 set c1 clear c2 clear c3 return home
+unless c0 set c0 clear c1 clear c2 clear c3 return home
+>Error: inc c = 1111
+
+return home
+
+
+room right
+
+unless x3 set x3 return home
+unless x2 set x2 clear x3 return home
+unless x1 set x1 clear x2 clear x3 return home
+unless x0 set x0 clear x1 clear x2 clear x3 return home
+>Error: inc x = 1111
+return home
+
+room left
+
+if x3 clear x3 return home
+if x2 clear x2 set x3 return home
+if x1 clear x1 set x2 set x3 return home
+if x0 clear x0 set x1 set x2 set x3 return home
+>Error: dec x = 0000
+return home
+
+room up
+
+unless y3 set y3 return home
+unless y2 set y2 clear y3 return home
+unless y1 set y1 clear y2 clear y3 return home
+unless y0 set y0 clear y1 clear y2 clear y3 return home
+>Error: inc y = 1111
+
+return home
+
+room down
+
+if y3 clear y3 return home
+if y2 clear y2 set y3 return home
+if y1 clear y1 set y2 set y3 return home
+if y0 clear y0 set y1 set y2 set y3 return home
+>Error: dec y = 0000
+return home
+
+room 0000
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0000,$ if xy set 0000,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0000,$ if Nxy set N0000,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0000,0000 set 0000
+if 0000,0001 set 0001
+if 0000,0010 set 0010
+if 0000,0011 set 0011
+if 0000,0100 set 0100
+if 0000,0101 set 0101
+if 0000,0110 set 0110
+if 0000,0111 set 0111
+if 0000,1000 set 1000
+if 0000,1001 set 1001
+
+return home
+
+room 0001
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0001,$ if xy set 0001,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0001,$ if Nxy set N0001,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0001,0000 set 0000
+if 0001,0001 set 0001
+if 0001,0010 set 0010
+if 0001,0011 set 0011
+if 0001,0100 set 0100
+if 0001,0101 set 0101
+if 0001,0110 set 0110
+if 0001,0111 set 0111
+if 0001,1000 set 1000
+if 0001,1001 set 1001
+
+return home
+
+room 0010
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0010,$ if xy set 0010,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0010,$ if Nxy set N0010,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0010,0000 set 0000
+if 0010,0001 set 0001
+if 0010,0010 set 0010
+if 0010,0011 set 0011
+if 0010,0100 set 0100
+if 0010,0101 set 0101
+if 0010,0110 set 0110
+if 0010,0111 set 0111
+if 0010,1000 set 1000
+if 0010,1001 set 1001
+
+return home
+
+room 0011
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0011,$ if xy set 0011,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0011,$ if Nxy set N0011,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0011,0000 set 0000
+if 0011,0001 set 0001
+if 0011,0010 set 0010
+if 0011,0011 set 0011
+if 0011,0100 set 0100
+if 0011,0101 set 0101
+if 0011,0110 set 0110
+if 0011,0111 set 0111
+if 0011,1000 set 1000
+if 0011,1001 set 1001
+
+return home
+
+room 0100
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0100,$ if xy set 0100,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0100,$ if Nxy set N0100,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0100,0000 set 0000
+if 0100,0001 set 0001
+if 0100,0010 set 0010
+if 0100,0011 set 0011
+if 0100,0100 set 0100
+if 0100,0101 set 0101
+if 0100,0110 set 0110
+if 0100,0111 set 0111
+if 0100,1000 set 1000
+if 0100,1001 set 1001
+
+return home
+
+room 0101
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0101,$ if xy set 0101,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0101,$ if Nxy set N0101,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0101,0000 set 0000
+if 0101,0001 set 0001
+if 0101,0010 set 0010
+if 0101,0011 set 0011
+if 0101,0100 set 0100
+if 0101,0101 set 0101
+if 0101,0110 set 0110
+if 0101,0111 set 0111
+if 0101,1000 set 1000
+if 0101,1001 set 1001
+
+return home
+
+room 0110
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0110,$ if xy set 0110,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0110,$ if Nxy set N0110,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0110,0000 set 0000
+if 0110,0001 set 0001
+if 0110,0010 set 0010
+if 0110,0011 set 0011
+if 0110,0100 set 0100
+if 0110,0101 set 0101
+if 0110,0110 set 0110
+if 0110,0111 set 0111
+if 0110,1000 set 1000
+if 0110,1001 set 1001
+
+return home
+
+room 0111
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 0111,$ if xy set 0111,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N0111,$ if Nxy set N0111,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 0111,0000 set 0000
+if 0111,0001 set 0001
+if 0111,0010 set 0010
+if 0111,0011 set 0011
+if 0111,0100 set 0100
+if 0111,0101 set 0101
+if 0111,0110 set 0110
+if 0111,0111 set 0111
+if 0111,1000 set 1000
+if 0111,1001 set 1001
+
+return home
+
+room 1000
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 1000,$ if xy set 1000,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N1000,$ if Nxy set N1000,$ return home
+
+clear 0000 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 1000,0000 set 0000
+if 1000,0001 set 0001
+if 1000,0010 set 0010
+if 1000,0011 set 0011
+if 1000,0100 set 0100
+if 1000,0101 set 0101
+if 1000,0110 set 0110
+if 1000,0111 set 0111
+if 1000,1000 set 1000
+if 1000,1001 set 1001
+
+return home
+
+room 1001
+
+if set-mode clear set-mode return home
+
+if modify-bool visit loady 
+if modify-bool clear modify-bool clear 1001,$ if xy set 1001,$ return home
+if modify-bool-N visit loady 
+if modify-bool-N clear modify-bool-N clear N1001,$ if Nxy set N1001,$ return home
+
+clear 1001 clear 0001 clear 0010 clear 0011 clear 0100 clear 0101 clear 0110 clear 0111 clear 1000 clear 1001
+
+if 1001,0000 set 0000
+if 1001,0001 set 0001
+if 1001,0010 set 0010
+if 1001,0011 set 0011
+if 1001,0100 set 0100
+if 1001,0101 set 0101
+if 1001,0110 set 0110
+if 1001,0111 set 0111
+if 1001,1000 set 1000
+if 1001,1001 set 1001
+
+return home
+
+room loadFromN
+
+visit clearx
+visit cleary
+visit clearmain
+
+room loadFromN*
+visit loadx
+visit $
+if N$,0000 set $,0000
+if N$,0001 set $,0001
+if N$,0010 set $,0010
+if N$,0011 set $,0011
+if N$,0100 set $,0100
+if N$,0101 set $,0101
+if N$,0110 set $,0110
+if N$,0111 set $,0111
+if N$,1000 set $,1000
+if N$,1001 set $,1001
+
+visit is(xp1)in
+if good visit right
+if good visit loadFromN*
+return home
+
+room clearmain
+
+clear 0000,0000 clear 0000,0001 clear 0000,0010 clear 0000,0011 clear 0000,0100 clear 0000,0101 clear 0000,0110 clear 0000,0111 clear 0000,1000 clear 0000,1001
+clear 0001,0000 clear 0001,0001 clear 0001,0010 clear 0001,0011 clear 0001,0100 clear 0001,0101 clear 0001,0110 clear 0001,0111 clear 0001,1000 clear 0001,1001
+clear 0010,0000 clear 0010,0001 clear 0010,0010 clear 0010,0011 clear 0010,0100 clear 0010,0101 clear 0010,0110 clear 0010,0111 clear 0010,1000 clear 0010,1001
+clear 0011,0000 clear 0011,0001 clear 0011,0010 clear 0011,0011 clear 0011,0100 clear 0011,0101 clear 0011,0110 clear 0011,0111 clear 0011,1000 clear 0011,1001
+clear 0100,0000 clear 0100,0001 clear 0100,0010 clear 0100,0011 clear 0100,0100 clear 0100,0101 clear 0100,0110 clear 0100,0111 clear 0100,1000 clear 0100,1001
+clear 0101,0000 clear 0101,0001 clear 0101,0010 clear 0101,0011 clear 0101,0100 clear 0101,0101 clear 0101,0110 clear 0101,0111 clear 0101,1000 clear 0101,1001
+clear 0110,0000 clear 0110,0001 clear 0110,0010 clear 0110,0011 clear 0110,0100 clear 0110,0101 clear 0110,0110 clear 0110,0111 clear 0110,1000 clear 0110,1001
+clear 0111,0000 clear 0111,0001 clear 0111,0010 clear 0111,0011 clear 0111,0100 clear 0111,0101 clear 0111,0110 clear 0111,0111 clear 0111,1000 clear 0111,1001
+clear 1000,0000 clear 1000,0001 clear 1000,0010 clear 1000,0011 clear 1000,0100 clear 1000,0101 clear 1000,0110 clear 1000,0111 clear 1000,1000 clear 1000,1001
+clear 1001,0000 clear 1001,0001 clear 1001,0010 clear 1001,0011 clear 1001,0100 clear 1001,0101 clear 1001,0110 clear 1001,0111 clear 1001,1000 clear 1001,1001
+
+return home
+
+room clearN
+
+clear N0000,0000 clear N0000,0001 clear N0000,0010 clear N0000,0011 clear N0000,0100 clear N0000,0101 clear N0000,0110 clear N0000,0111 clear N0000,1000 clear N0000,1001
+clear N0001,0000 clear N0001,0001 clear N0001,0010 clear N0001,0011 clear N0001,0100 clear N0001,0101 clear N0001,0110 clear N0001,0111 clear N0001,1000 clear N0001,1001
+clear N0010,0000 clear N0010,0001 clear N0010,0010 clear N0010,0011 clear N0010,0100 clear N0010,0101 clear N0010,0110 clear N0010,0111 clear N0010,1000 clear N0010,1001
+clear N0011,0000 clear N0011,0001 clear N0011,0010 clear N0011,0011 clear N0011,0100 clear N0011,0101 clear N0011,0110 clear N0011,0111 clear N0011,1000 clear N0011,1001
+clear N0100,0000 clear N0100,0001 clear N0100,0010 clear N0100,0011 clear N0100,0100 clear N0100,0101 clear N0100,0110 clear N0100,0111 clear N0100,1000 clear N0100,1001
+clear N0101,0000 clear N0101,0001 clear N0101,0010 clear N0101,0011 clear N0101,0100 clear N0101,0101 clear N0101,0110 clear N0101,0111 clear N0101,1000 clear N0101,1001
+clear N0110,0000 clear N0110,0001 clear N0110,0010 clear N0110,0011 clear N0110,0100 clear N0110,0101 clear N0110,0110 clear N0110,0111 clear N0110,1000 clear N0110,1001
+clear N0111,0000 clear N0111,0001 clear N0111,0010 clear N0111,0011 clear N0111,0100 clear N0111,0101 clear N0111,0110 clear N0111,0111 clear N0111,1000 clear N0111,1001
+clear N1000,0000 clear N1000,0001 clear N1000,0010 clear N1000,0011 clear N1000,0100 clear N1000,0101 clear N1000,0110 clear N1000,0111 clear N1000,1000 clear N1000,1001
+clear N1001,0000 clear N1001,0001 clear N1001,0010 clear N1001,0011 clear N1001,0100 clear N1001,0101 clear N1001,0110 clear N1001,0111 clear N1001,1000 clear N1001,1001
+
+return home

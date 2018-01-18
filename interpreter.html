@@ -1,0 +1,741 @@
+<html>
+<head>
+<title>Visual TAIL interpreter</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<script>
+
+var KILL = false, raw = "", xl = 0;
+
+
+var RUN = false;
+
+var ERROR_LOG = "";
+
+var SEC_DELAY = 0;
+var move = { ln: null, pn: null };
+
+
+var instructions = [];
+
+var rooms = {};
+var switches = {}, visits = [];
+var lastTarget = "", lastInput = "";
+
+var promptData = {
+	information:"",
+	lineNumber:0,
+	phraseNumber:0,
+	callback:function(){}
+}
+
+
+function prompt ( a, ln, pn, fn ) {
+
+promptData.information = a;
+promptData.lineNumber = ln;
+promptData.phraseNumber = pn;
+promptData.callback = fn;
+
+if ( promptData.phraseNumber >= instructions[promptData.lineNumber].length ) {
+	promptData.lineNumber = ln+1;
+	promptData.phraseNumber = 0;
+}
+
+$("#prompt-text").html(a);
+		$("#prompt-text").val(a);
+		$("#prompt-box").val("");
+		$("#prompt").show();
+		$("#prompt-box").focus();
+
+}
+
+function promptGet ( ret ) {
+
+promptData.input = ret;
+promptData.callback( ret, promptData.information );
+lastInput = ret;
+
+
+$("#modal-bg").hide( function() { 
+		$("#prompt-text").val("");
+		$("#prompt-box").val("");
+		$("#prompt").hide();
+	} );
+
+executeFile( promptData.lineNumber, promptData.phraseNumber );
+
+//show (promptData.lineNumber, promptData.phraseNumber, !RUN);
+
+
+}
+
+var LAST_AT = [0,0], legacy = "";
+function show ( ln, pn, forceNext ) {
+	
+	/*if ( SEC_DELAY > 0 ) {
+		console.log("YES!");
+		var c= SEC_DELAY; SEC_DELAY = 0;
+		setTimeout( "show(" + ln + "," + pn + "," + forceNext + ")", c*1000 );
+
+	}*/
+
+	xl++;
+	if ( ln !== null && pn !== null ) {
+		move.ln = ln;
+		move.pn = pn;
+	} else {
+		ln = move.ln;
+		pn = move.pn;
+	}
+	
+	if ( RUN  || forceNext ) {
+	
+		if ( (RUN && $("#speed").val()*1 >= 0 )  || forceNext ) {
+			$(".sentence[data-sentence=" + LAST_AT[0] + "] .phrase[data-phrase=" + LAST_AT[1] + "]").removeClass("on").html(legacy);
+			try {$(".sentence[data-sentence=" + LAST_AT[0] + "] .phrase[data-phrase=0]")[0].scrollIntoView();
+			} catch(e) {}
+			$(".sentence[data-sentence=" + ln + "] .phrase[data-phrase=" + pn + "]").addClass("on");
+	
+			var el = $(".sentence[data-sentence=" + ln + "] .phrase[data-phrase=" + pn + "]")[0];
+	
+	
+	
+			//not sure why this throws up sometimes but it never seems to affect the game.
+			//so just gonna suppress the error...
+			if ( !el ) { return false;}
+	
+	
+			legacy = el.innerHTML;
+			el.innerHTML = el.innerHTML.split("$").join("<span class='buck' >" + lastTarget + "</span>");
+	
+	
+			var line = Math.max(0, ln-8);
+			var phrase = Math.min( instructions[ln].length-1, pn+1 )
+
+
+			try {	
+				$(".sentence[data-sentence=" + ln + "] .phrase[data-phrase=" + phrase + "]")[0].scrollIntoView();
+						$(".sentence[data-sentence=" + line + "]")[0].scrollIntoView();
+
+			} catch(e){ };
+		}
+		
+		if ( RUN && $("#speed").val()*1>=0 ) {
+			var time = $("#speed").val()*1;
+			setTimeout('executeFile(' + ln + ',' + pn + ')', time);
+		} else {
+			executeFile(ln,pn);
+		}
+	
+		LAST_AT = [ln,pn];
+	
+	}
+}
+
+function printInstructions() {
+
+var html = "";
+for ( var i=0; i<instructions.length; i++ ) {
+	html += "<div><span class='num' >" + (i+1) + "</span>"
+			+ "<div class='wa' >"
+			+ "<div class='sentence' data-sentence='" + i + "' id='s" + i + "' >"
+	for ( var j=0; j<instructions[i].length; j++ ) {
+		var on = !i&&!j?" on":"";
+
+		if ( instructions[i][j][0] != "#" ) {
+			html += "<span class='phrase" + on 
+				+ "' id='p" + i + "_" + j + "' data-sentence='" + i
+				+ "' data-phrase='" + j + "' >"
+				+ "<span class='command' >" + instructions[i][j][0] + "</span>"
+				+ "<span class='information' >" + instructions[i][j][1] + "</span>"
+				+ "</span>";
+				
+			if ( on.length ) { 
+				legacy = "<span class='command' >" + instructions[0][0][0] + "</span>"
+					+ "<span class='information' >" + instructions[0][0][1] + "</span>";
+			}
+
+		} else {
+			html += "<span class='comment phrase" + on 
+				+ "' id='p" + i + "_" + j + "' data-sentence='" + i
+				+ "' data-phrase='" + j + "' >"
+				+ "#" + instructions[i][j][1] + "</span>"
+				+ "</span>";
+			if ( on.length ) {
+				legacy = "#" + instructions[i][j][1];			
+			}
+		}
+		
+	}
+	html += "</div></div></div>\n";
+}
+
+ 
+
+$("#container").html(html);
+
+}
+
+function warn ( line, msg ) {
+	ERROR_LOG += "(Warning) Line " + line + ": " + msg + "\n";
+}
+
+function die ( line, msg ) {
+	ERROR_LOG += "(Fatal error) Line " + line + ": " + msg + "\n";
+	KILL = true;
+}
+
+function init( program ) {
+
+instructions = [];
+
+rooms = {};
+switches = {}, visits = [];
+lastTarget = "", lastInput = "";
+
+raw = program;
+LAST_AT = [0,0];
+move = { pn:null, ln:null };
+xl = 0, KILL= false;
+ERROR_LOG = "";
+
+
+processGameFile();
+
+if (ERROR_LOG.length) alert(ERROR_LOG);
+if (KILL) return;
+
+printInstructions();
+
+RUN = true;
+$(".not").removeClass("not");
+setTimeout('executeFile()', 3000);
+
+$("body").addClass("play");
+
+
+}
+
+function processGameFile() {
+
+var arr = raw.split('\n');
+var cnt = 0;
+
+
+for ( var i=0; i<arr.length; i++ ) {
+	arr[i] = arr[i].trim();
+	
+	if ( arr[i] != "" ) {
+		
+		try {
+			instructions.push( handleLine(arr[i], cnt++)  );
+		} catch(e) {
+			die(i+1, "Syntax error. " +
+				"Specify an information word for each command");
+		}
+	
+	} else {
+		instructions.push( [['','']] );
+		cnt++;
+	}
+
+}
+
+
+}
+
+function handleLine ( sentence, sentenceNum ) {
+
+var list = [];
+
+var core_commands = "chapter println # % ! print goto end prompt on set clear if unless match visit return"
+	.split(" ");
+var extra_commands = "wait chance".split(" ");
+
+if ( sentence[0] == ">" ) {
+	list.push(["println",sentence.substring(1, sentence.length)]);
+} else if ( sentence[0] == "#" ) {
+	list.push(["#",sentence.substring(1, sentence.length)]);
+} else if ( sentence[0] == "%" ) {
+	list.push(["%",""]);
+} else if ( sentence[0] == "!" ) {
+	list.push(["!",""]);
+} else {
+
+var words = sentence.split(" ");
+for ( var i=0; i<words.length; i+=2 ) {
+
+	words[i+1] = words[i+1].split("+").join(" ");
+	words[i] = words[i].toLowerCase();
+	if (core_commands.indexOf( words[i] ) < 0 && extra_commands.indexOf( words[i] ) < 0 ) {
+		warn ( sentenceNum, "Unknown command '" + words[i] + "'. Behavior not guaranteed.");
+	}
+	if ( extra_commands.indexOf( words[i] ) > -1 ) {
+		warn ( sentenceNum, "Command '" + words[i] + "' is supported, but not standard in TAIL16.");
+	}
+	if ( words[i] == "chapter") {
+		rooms[ words[i+1] ] = sentenceNum;
+	}
+	list.push([words[i],words[i+1]]);
+}
+}
+
+return list;
+
+}
+
+function executeFile( lineNumber, phraseNumber) {
+		
+	if (!lineNumber) 
+		lineNumber = 0;
+	if (!phraseNumber)
+		phraseNumber = 0;
+				
+	while (lineNumber < instructions.length) {
+		
+		for (i = phraseNumber; i < instructions [lineNumber].length; i++) {
+			
+				var command = instructions [lineNumber] [i] [0];
+				var information = instructions [lineNumber] [i] [1];
+				information = information.split ("$").join(lastTarget);
+				var stopExecutingLine = false;
+								
+				switch ( command) {
+				case "prompt":
+					prompt(information, lineNumber, phraseNumber+1, function(ret, information) {
+						$("#output #inner").html( $("#output #inner").html()
+						 + information.split(" ").join("&nbsp;") + " " + ret + "<br>");
+						$("#bot")[0].scrollIntoView();
+
+					});
+					stopExecutingLine = true;
+					lineNumber = instructions.length;
+
+					break;
+				case "on":
+					if (lastInput.toLowerCase ().indexOf (information.toLowerCase ()) == -1) {
+						stopExecutingLine = true;
+					}
+					break;
+				//Suggested in TAIL15-16
+				case "chance":
+					var rand = Math.random();
+					if ( rand > (.01 * information) ) {
+						stopExecutingLine = true;
+					} 
+					break;
+				//new in TAIL16
+				case "match":
+					if (lastInput.toLowerCase ().indexOf (information.toLowerCase ()) != 0) {
+						stopExecutingLine = true;
+					} else {
+						lastInput = lastInput.slice( information.length );
+					}
+					break;
+				case "if":
+					if (!switches[information]) {
+						stopExecutingLine = true;
+					}
+					break;
+				case "unless":
+					if (switches[information]) {
+						stopExecutingLine = true;
+					}
+					break;
+				case "set":
+					switches [information] = true;
+					break;
+				case "clear":
+					switches [information] = false;
+					break;
+				case "goto":
+					if (rooms[information] !== undefined) {
+						lineNumber = rooms[information]-1;
+						stopExecutingLine = true;
+					}
+					lastTarget = information;
+					break;
+				case "visit":
+					if ( rooms[information] != undefined){
+						visits.push(lineNumber+1);
+						lineNumber = rooms[information]-1;
+						stopExecutingLine = true;
+					}
+					break;
+				case "return":
+					if (visits.length > 0) {
+						lineNumber = visits.pop () - 1;
+						stopExecutingLine = true;
+					}
+					break;
+				case "end":
+					lineNumber = instructions.length;
+					stopExecutingLine = true;
+					//setTimeout('$("body").addClass("not"); $("#container").html(""); $("#output #inner").html("")',1000);
+					break;
+				case "println":
+					$("#output #inner").html( $("#output #inner").html() 
+						+ information.split(" ").join("&nbsp;")  + "<br>");
+					$("#bot")[0].scrollIntoView();
+					break;
+				case "print":
+					$("#output #inner").html( $("#output #inner").html()
+						 + information.split(" ").join("&nbsp;") );
+					$("#bot")[0].scrollIntoView();
+					break;
+				//Suggested in TAIL 15-16
+				case "wait":
+					SEC_DELAY = information*1;
+					break;
+				//new in TAIL16
+				case "#":
+					break;
+				case "%":
+					pause();
+					break;
+				case "!":
+					play();
+					break;
+				case "chapter":
+					break;
+				case "":
+					xl--;
+					break;
+				default:
+					//Console.WriteLine ("Command not recognized: " + command);
+					break;
+				}
+		
+				if ( stopExecutingLine || phraseNumber == instructions[lineNumber].length-1 ) {
+					lineNumber++;
+					phraseNumber = -1;
+				}
+
+				if ( command != "prompt" && command != "wait" ) {
+					show(lineNumber, phraseNumber+1);
+				} else if ( command == "wait" ) {
+					setTimeout("show(" + lineNumber + "," + (phraseNumber+1) + ")", SEC_DELAY*1000);
+					SEC_DELAY = 0;
+				}
+		
+				lineNumber = instructions.length;
+				break;
+		
+			}
+			
+			lineNumber++;
+			
+	}		
+}
+
+function play (){
+
+$("body").removeClass("pause").addClass("play");
+RUN = true;
+show(null, null);
+
+}
+
+function pause (){
+
+if ($("#speed").val()*1 < 0 ) {
+	$("#speed").val(0);
+}
+$("body").removeClass("play").addClass("pause");
+RUN = false;
+
+}
+
+$("document").ready(function() {
+$("textarea").focus();
+
+});
+
+</script>
+<style>
+
+body.not #head {
+	background:white;
+	position:fixed;
+	top:0;
+	left:0;
+	width:100%
+}
+
+#head {
+	position:fixed;
+	z-index:12;
+	top:0;
+	right:0;
+	width:36%;
+	font-family:"comic sans ms";
+	background:#abb;
+	height:100px;
+}
+
+#head h1 {
+	z-index:12;
+	font-size:20pt;
+	margin-left:10px;
+}
+
+body.not #head h1 {
+	display:block;
+	position:static;
+	font-size:2em;
+}
+
+body {
+}
+#modal-bg {
+	opacity:0.7;
+	filter:Alpha(opacity=0.7);
+	background:black;
+	display:none;
+	position:fixed;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	z-index:10;
+}
+
+#output {
+	position:fixed;
+	top:0;
+	right:0;
+	background:#abb;
+	color:black;
+	z-index:3;
+	width:33%;
+	padding:1.5%;
+	padding-top:6%;
+	font-family:monospace;
+	height:92.5%;
+	overflow-y:scroll;
+	overflow-x:scroll;
+}
+
+#output #inner {
+margin-top:20px;
+}
+
+
+#output #bot {
+margin-top:130px;
+}
+
+body.not #output {
+	display:none;
+}
+
+#prompt {
+	background:white;
+	border-radius:3px;
+	width:33%;
+	padding:1.5%;
+	position:fixed;
+	right:0%;
+	bottom:0%;
+	display:none;
+	z-index:11;
+	font-family:monospace;
+}
+
+textarea {
+	height:0px;
+	opacity:0;
+	filter:Alpha(opacity=0);
+	font-family:monospace;
+	padding:10px;
+	font-size:12pt;
+	width:85%;
+}
+
+body.not #run {
+	width:15%;
+	background:white;
+	color:black;
+	position:fixed;
+	top:100;
+	right:0;
+	height:40;
+	z-index:20;
+	display:block;
+	transition:all ease-in .2s;
+	height:500px;
+	font-size:60pt;
+	font-family:"comic sans ms";
+}
+
+#run {
+	display:none;
+}
+
+body.not #run:hover {
+	background:#eee;
+}
+
+body.not textarea {
+	height:500px; 
+	width:85%%; 
+	float:left;
+	opacity:1;
+	opacity:Alpha(opacity=1);
+	transition:all ease-in 1s;
+	margin-top:100px;
+	box-shadow:2px 2px 2px #ccc inset;
+	border-radius:5;
+
+}
+
+.comment {
+	color:#2fb;
+	font-family:monospace;
+	padding:3px;
+	margin-right:5px;
+}
+
+.command {
+	color:#2bf;
+	font-family:monospace;
+	padding:3px;
+	margin-right:5px;
+}
+
+.information {
+	color:white;
+	font-family:monospace;
+	padding:3px;
+	margin-right:5px;
+}
+
+.sentence {
+	width:150%;
+	display:inline-block;	
+}
+
+.phrase {
+	display:inline-block;
+}
+
+.phrase.on {
+
+	background:orange;
+	text-shadow:1px 1px black;
+
+}
+
+.buck {
+	color:black;
+	background:purple;
+}
+
+.num {
+	color:darkred;
+	margin-right:10px;
+	font-family:arial;
+	font-size:8pt;
+	width:30px;
+	display:inline-block;
+}
+
+#container {
+	position:fixed;
+	bottom:0;
+	left:0;
+	height:98%;
+	width:100%;
+	overflow-y:scroll;
+	overflow-x:scroll;
+	background:black;
+	padding:1%;
+	padding-left:10px;
+	transition:all ease-in 1s;
+}
+
+body.not #container {
+	height:50px;
+}
+
+#sw {
+	position:fixed;
+	right:30px;
+	top:30px;
+	z-index:15;
+}
+
+.pause #pause, .not #pause {
+	display:none;
+}
+
+.play #step, .not #step {
+	display:none;
+}
+
+.play #play, .not #play {
+	display:none;
+}
+
+#sw #ctrls {
+	position:fixed;
+	right:30;
+	top:60;
+	
+}
+
+.wa {
+	max-width:55%;
+	overflow-x:scroll;
+	display:inline-block;
+}
+
+.wa::-webkit-scrollbar { 
+    display: none; 
+}
+
+
+</style>
+</script>
+
+</head>
+<body class='not' >
+<div id='head' >
+<h1>Visual TAIL Interpreter</h1>
+
+<div id='sw' >
+
+<div id='ctrls' >
+<button id='pause' onclick='pause()'>&#9612;&#9612; Pause</button>
+<button id='play' onclick='play()'>&#9658; Play</button>
+<button id='step' onclick='show(null,null,true)'>&#8618; Next</button>
+</div>
+
+<label for='speed' >Speed</label>
+<select id='speed'>
+<option value='-1' >Instantaneous</option>
+<option value='0' >Light speed</option>
+<option value='100' >Faster</option>
+<option value='250' >Fast</option>
+<option value='1000' selected='selected'  >Medium</option>
+<option value='2000' >Slow</option>
+</select>
+</div>
+</div>
+<div id='main'>
+
+<button id='run' onclick='init($("textarea").val())' >&#9658; Run</button>
+<textarea id='input' class='not' placeholder='Paste your program here' ></textarea>
+<div id='container' class='not' ></div>
+<div id='output' class='not' ><div id='top' ></div><div id='inner' ></div><div id='bot' ></div></div>
+</div>
+<div id='modal-bg' ></div>
+<div id='prompt' >PROMPT<br>
+<form action='javascript:;' ><span id='prompt-text' ></span><input type='text' id='prompt-box' />
+
+<button onclick='promptGet($("#prompt-box").val())' >OK</button>
+</form>
+</div>
+</body>
+</html>
